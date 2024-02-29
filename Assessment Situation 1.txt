@@ -1,0 +1,131 @@
+Situation (Part 1), Develop the RESTful API to register/delete/update/get for an user using verbs such as @GET, @POST, @PUT, @DELETE.
+With provided attributes (username, email, phone number, skillsets, hobby)
+For API Endpoints, I would define the schema:
+API POST: /user/Register
+Request: 
+{
+  "userName": {
+    "type": "String",
+    "regex": "none",
+    "mandatory": "true",
+    "description": "User name for created user"
+  },
+  "email": {
+    "type": "String", 
+    "regex": "^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$",
+    "mandatory": "true",
+    "description": "Email for created user"
+  },
+  "phoneNumber": {
+    "type": "String", 
+    "regex": "^(\+?6?01)[0-46-9]-*[0-9]{7,8}$",
+    "mandatory": "true",
+    "description": "Phone number for created user, assume Malaysia number"
+  },
+  "skillList": {
+    "type": "String array",
+    "regex": null,
+    "mandatory": "true",
+    "description": "An array of skill sets provided by created user"
+  },
+  "hobby": {
+    "type": "String",
+    "regex": null,
+    "mandatory": "true",
+    "description": "An optional field for created user further describe him/herself"
+  }
+}
+
+Response: 
+{
+  "userName": {
+    "type": "String or null",
+    "description": "Name of registered user. Null if error found."
+  },
+  "userId": {
+    "type": "String or null",
+    "description": "Unique Identifier for registered user. Null if error found."
+  },
+  "errorCode": {
+    "type": "String",
+    "description": "Self defined code to indicate the request is success or error found. For example, 200 - Success"
+  }
+}
+
+API DELETE: /user/{userId}
+userId: User Id when user registered by API /user/Register. Corresponding field: Response.userId
+Response: 
+{
+  "errorCode": {
+    "type": "String",
+    "description": "Self defined code to indicate the request is success or error found. For example, 200 - Success"
+  }
+}
+
+API GET: /user/{userId}
+userId: User Id when user registered by API /user/Register. Corresponding field: Response.userId
+Response: 
+{
+  "userName": {
+    "type": "String",
+    "description": "User name for searched user"
+  },
+  "email": {
+    "type": "String", 
+    "description": "Email for searched user"
+  },
+  "phoneNumber": {
+    "type": "String", 
+    "description": "Phone number for searched user"
+  },
+  "skillList": {
+    "type": "String array",
+    "description": "An array of skill sets provided by searched user"
+  },
+  "hobby": {
+    "type": "String",
+    "description": "An optional field for searched user further describe him/herself"
+  }
+  "errorCode": {
+    "type": "String",
+    "description": "Self defined code to indicate the request is success or error found. For example, 200 - Success"
+  }
+}
+
+API UPDATE: /user/{userId}
+userId: User Id when user registered by API /user/Register. Corresponding field: Response.userId
+Request: 
+{
+  "email": {
+    "type": "String", 
+    "regex": "^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$",
+    "mandatory": "false",
+    "description": "A new value which selected user attemptes to modify"
+  },
+  "phoneNumber": {
+    "type": "String", 
+    "regex": "^(\+?6?01)[0-46-9]-*[0-9]{7,8}$",
+    "mandatory": "false",
+    "description": "A new value which selected user attemptes to modify, assume Malaysia number"
+  },
+  "skillList": {
+    "type": "String array",
+    "regex": null,
+    "mandatory": "false",
+    "description": "A new value which selected user attemptes to modify"
+  },
+  "hobby": {
+    "type": "String",
+    "regex": null,
+    "mandatory": "false",
+    "description": "A new value which selected user attemptes to modify"
+  }
+}
+
+Response: 
+{
+  "errorCode": {
+    "type": "String",
+    "description": "Self defined code to indicate the request is success or error found. For example, 200 - Success"
+  }
+}

@@ -1,0 +1,219 @@
+Situation 3: Build a Web interface for above 4 operations (register/delete/update/get)
+
+Assuming using Angular and Angular Material design, and the interface is for Admin-level to manage all users.
+
+For app.component.html:
+
+<mat-tab-group>
+  <mat-tab label="Register User">
+    <app-register-user></app-register-user>
+  </mat-tab>
+  <mat-tab label="All user">
+    <app-all-user></app-all-user>
+  </mat-tab>
+</mat-tab-group>
+
+Main component should do nothing, just provide a tab group to register user and display all registered users.
+
+For register-user.component.ts:
+
+export class RegisterUserComponent implements OnInit {
+
+  userForm: FormGroup
+  constructor(private formBuilder: FormBuilder,
+              public apiService: ApiService) {
+  }
+  
+  ngOnInit(): void {
+    this.userForm = this.formBuilder.group({
+      userName: ['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email]],
+      phoneNumber: ['', [Validators.required]],
+      skillList: this.formBuilder.array([]),
+      hobby: ['']
+    });
+  }
+
+  get skillList(): FormArray {
+    return this.userForm.get('skillList') as FormArray;
+  }
+
+  addSkill(skill: string): void {
+    this.skillList.push(this.formBuilder.control(skill));
+  }
+
+  onSubmit(): void {
+    if (this.userForm.valid) {
+      apiService.create(this.userForm.value)
+    }
+  }
+}
+
+For register-user.component.html:
+
+<form [formGroup]="userForm" (ngSubmit)="onSubmit()">
+  <div>
+    <label for="userName">User Name:</label>
+    <input type="text" id="userName" formControlName="userName">
+  </div>
+
+  <div>
+    <label for="email">Email:</label>
+    <input type="email" id="email" formControlName="email">
+  </div>
+
+  <div>
+    <label for="phoneNumber">Phone Number:</label>
+    <input type="text" id="phoneNumber" formControlName="phoneNumber">
+  </div>
+
+  <div formArrayName="skillList">
+    <label>Skills:</label>
+    <div *ngFor="let skill of skillList.controls; let i=index">
+      <input type="text" [formControlName]="i">
+    </div>
+    <button type="button" (click)="addSkill('')">Add Skill</button>
+  </div>
+
+  <div>
+    <label for="hobby">Hobby:</label>
+    <input type="text" id="hobby" formControlName="hobby">
+  </div>
+
+  <button type="submit">Register</button>
+</form>
+
+For all-user.component.ts:
+<table>
+  <tr>
+    <th>ID</th>
+    <th>User Name</th>
+    <th>Email</th>
+    <th>Actions</th>
+  </tr>
+  <tr *ngFor="let user of users">
+    <td>{{ user.id }}</td>
+    <td>{{ user.userName }}</td>
+    <td>{{ user.email }}</td>
+    <td>
+      <button (click)="deleteUser(user.id)"><i class="fa fa-times"></i></button>
+      <a [routerLink]="['/edit', user.id]">Edit</a>
+    </td>
+  </tr>
+</table>
+
+For all-user.component.ts:
+
+export class AllUserComponents implementsOnInit {
+  users: any[] = []
+  constructor(private apiService: ApiService) { }
+
+  ngOnInit(): void {
+    this.apiService.getUsers().subscribe((data: any[]) => {
+      this.users = data
+    })
+  }
+
+  deleteUser(userId: string) {
+    this.apiService.deleteUsers().subscribe((data: any[]) => {
+    )}
+  }
+}
+
+For app-routing.module.ts:
+
+const routes: Routes = [
+  { path: 'edit/:userId', component: EditUserComponent },
+]
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule]
+})
+export class AppRoutingModule { }
+
+For edit-user.component.html:
+
+<form [formGroup]="userForm" (ngSubmit)="onSave()">
+  <div>
+    <label for="userName">User Name:</label>
+    <input type="text" id="userName" formControlName="userName" readonly>
+  </div>
+
+  <div>
+    <label for="email">Email:</label>
+    <input type="email" id="email" formControlName="email">
+  </div>
+
+  <div>
+    <label for="phoneNumber">Phone Number:</label>
+    <input type="text" id="phoneNumber" formControlName="phoneNumber">
+  </div>
+
+  <div formArrayName="skillList">
+    <label>Skills:</label>
+    <div *ngFor="let skill of skillList.controls; let i=index">
+      <input type="text" [formControlName]="i">
+    </div>
+    <button type="button" (click)="addSkill('')">Add Skill</button>
+  </div>
+
+  <div>
+    <label for="hobby">Hobby:</label>
+    <input type="text" id="hobby" formControlName="hobby">
+  </div>
+
+  <button type="submit">Register</button>
+</form>
+
+For edit-user.component.ts:
+
+export class EditUserComponent implements OnInit {
+
+  userId: number
+  userForm: FormGroup
+  constructor(private formBuilder: FormBuilder,
+              public apiService: ApiService,
+              private route: ActivatedRoute,
+              private router: Router) {
+  }
+  
+  ngOnInit(): void {
+    this.userId = this.route.snapshot.params['userId']
+    this.userForm = this.formBuilder.group({
+      userName: ['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email]],
+      phoneNumber: ['', [Validators.required]],
+      skillList: this.formBuilder.array([]),
+      hobby: ['']
+    })
+    this.getUserInfo()
+  }
+
+  getUserInfo(): void {
+    this.apiService.getUserById(this.userId).subscribe(user => {
+      this.userForm.patchValue({
+        userName: user.userName,
+        email: user.email,
+        phoneNumber: user.phoneNumber,
+        skillList: user.skillList,
+        hobby: user.hobby
+      });
+    });
+  }
+
+  get skillList(): FormArray {
+    return this.userForm.get('skillList') as FormArray;
+  }
+
+  addSkill(skill: string): void {
+    this.skillList.push(this.formBuilder.control(skill));
+  }
+
+  onSave(): void {
+    if (this.userForm.valid) {
+      apiService.update(this.userId, this.userForm.value).subscribe(() => {
+        this.router.navigate(['/user'])
+    }
+  }
+}
